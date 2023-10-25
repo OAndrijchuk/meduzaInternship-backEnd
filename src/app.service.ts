@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 
 interface InfoResponse {
   status_code: number;
@@ -8,9 +8,9 @@ interface InfoResponse {
 
 @Injectable()
 export class AppService {
-  getInfo(): InfoResponse {
+  async getInfo(): Promise<InfoResponse> {
     return {
-      status_code: 200,
+      status_code: HttpStatus.OK,
       detail: `ok`,
       result: `working`,
     };

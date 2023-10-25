@@ -13,7 +13,7 @@ export class AppController {
 
   @Get()
   @HttpCode(200)
-  getInfo(): InfoResponse {
+  async getInfo(): Promise<InfoResponse> {
     return this.appService.getInfo();
   }
 }

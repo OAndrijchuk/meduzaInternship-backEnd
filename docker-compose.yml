@@ -1,0 +1,31 @@
+# docker run -p 3001:3001 -d --rm --name internship-back-cont --env-file ./.env -v logs:/app/data internship-back:v0.01
+version: "3.5"
+services:
+  internship-back:
+    build: .
+    container_name: internship-back-cont
+    volumes: 
+      - logs:/app/data
+    env_file: ./.env
+    ports: 
+      - '3001:3001'
+    restart: unless-stopped
+    depends_on:
+      - app-db
+
+  app-db:
+    image: postgres
+    container_name: internship-db-cont
+    environment:
+      - POSTGRES_PASSWORD=jktue2040s
+      - POSTGRES_DB=nest-app-db
+      - POSTGRES_USER=admin
+
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+volumes: 
+  logs:

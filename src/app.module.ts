@@ -1,10 +1,25 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { SequelizeModule } from '@nestjs/sequelize';
+import 'dotenv/config';
+
+const { DB_PASSWORD } = process.env;
 
 @Module({
-  imports: [],
   controllers: [AppController],
   providers: [AppService],
+  imports: [
+    SequelizeModule.forRoot({
+      dialect: 'postgres',
+      host: 'localhost',
+      port: 8080,
+      username: 'admin',
+      password: DB_PASSWORD,
+      database: 'nest-app-db',
+      models: [],
+      autoLoadModels: true,
+    }),
+  ],
 })
 export class AppModule {}

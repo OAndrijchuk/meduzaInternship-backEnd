@@ -1,25 +1,29 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SequelizeModule } from '@nestjs/sequelize';
-import 'dotenv/config';
-
-const { DB_PASSWORD } = process.env;
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   controllers: [AppController],
   providers: [AppService],
   imports: [
-    SequelizeModule.forRoot({
-      dialect: 'postgres',
-      // host: 'localhost',
-      host: 'internship-db-cont',
-      port: 8080,
-      username: 'admin',
-      password: 'jktue2040s',
-      database: 'nest-app-db',
-      models: [],
-      autoLoadModels: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'postgres',
+        host: 'postgres-db',
+        port: 5432,
+        username: 'postgres',
+        password: 'password',
+        database: 'postgres',
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true,
+      }),
     }),
   ],
 })

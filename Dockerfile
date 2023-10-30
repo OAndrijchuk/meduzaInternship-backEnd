@@ -1,8 +1,8 @@
-FROM node
+FROM node:19
 
 WORKDIR /app
 
-COPY package.json /app
+COPY package.json .
 
 RUN npm install
 
@@ -12,6 +12,6 @@ ENV PORT 3001
 
 EXPOSE $PORT
 
-VOLUME ["/app/data"] 
+RUN npm run build
 
-CMD ["node", "dist/main.js"]
+CMD ["npm", "run", "start:prod"]

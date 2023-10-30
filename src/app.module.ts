@@ -12,10 +12,11 @@ const { DB_PASSWORD } = process.env;
   imports: [
     SequelizeModule.forRoot({
       dialect: 'postgres',
-      host: 'localhost',
+      // host: 'localhost',
+      host: 'internship-db-cont',
       port: 8080,
       username: 'admin',
-      password: DB_PASSWORD,
+      password: 'jktue2040s',
       database: 'nest-app-db',
       models: [],
       autoLoadModels: true,

@@ -1,0 +1,32 @@
+version: '3.5'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: internship-back
+    ports:
+      - ${PORT}:3001
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - 'D:\meduzzen\meduzzenn-iternship-back:/app'
+      - /app/node_modules
+    depends_on: [postgres-db]
+
+  postgres-db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ${DB_USER_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: /data/postgres
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+volumes:
+  node_modules:

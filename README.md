@@ -4,9 +4,28 @@ Global variables must be added before use (exemple theyr are in .env.sample
 filed):
 
 - DB_HOST - write your dataBase link
-- PORT - wite port when you want to start this project
+- PORT - wite port when you want to start this project ...
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+
+## Installation
+
+```bash
+$ npm install
+```
+
+## Running the app
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
 
 ## Docker
 
@@ -32,23 +51,29 @@ $ make stop
 
 If desired, you can use regular docker commands
 
-## Installation
+## Migration
+
+To simplify work with DB, you can use the
+[migrations ](https://typeorm.io/migrations) utility.
 
 ```bash
-$ npm install
+$ Creating a new clear migration
+# npm run migration:create ./migration/<-migration name->
 ```
 
-## Running the app
+```bash
+$ Creating a new migration width name
+# npm run migration:generate --name=<-migration name->
+```
 
 ```bash
-# development
-$ npm run start
+$ Run migrations
+# npm run migration:run
+```
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```bash
+$ Revert the changes of the last migration
+# npm run migration:revert
 ```
 
 ## Test

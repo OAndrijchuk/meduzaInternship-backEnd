@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Tokens } from './tokens.entity';
 
 @Entity()
 export class User {
@@ -12,7 +14,7 @@ export class User {
   id: number;
 
   @Column({ default: 'user', nullable: false })
-  login: string;
+  userName: string;
 
   @Column()
   email: string;
@@ -20,8 +22,8 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ default: '' })
-  token: string;
+  @OneToOne(() => Tokens, tokens => tokens.userId, { onDelete: 'CASCADE' })
+  tokens: Tokens;
 
   @CreateDateColumn()
   createdAt: Date;

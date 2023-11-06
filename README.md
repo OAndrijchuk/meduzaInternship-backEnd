@@ -63,7 +63,7 @@ $ Creating a new clear migration
 
 ```bash
 $ Creating a new migration width name
-# npm run migration:generate --name=<-migration name->
+# npm run migration:generate ./migration/<-migration name->
 ```
 
 ```bash

@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: internship-back
     ports:
-      - ${PORT}:3001
+      - ${PORT}:${PORT}
     restart: always
     env_file:
       - .env
@@ -19,12 +19,12 @@ services:
     image: postgres:15
     container_name: postgres-db
     environment:
-      POSTGRES_USER: ${DB_USER_NAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${TYPEORM_USERNAME}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      POSTGRES_DB: ${TYPEORM_DATABASE}
       PGDATA: /data/postgres
     ports:
-      - ${DB_PORT}:5432
+      - ${TYPEORM_PORT}:${TYPEORM_PORT}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
 

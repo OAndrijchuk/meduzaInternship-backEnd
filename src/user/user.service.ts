@@ -58,13 +58,16 @@ export class UserService {
         id,
       },
     });
+
     if (!user) {
       throw new BadRequestException(`User with id:${id} does not exist!`);
     }
     return {
       status_code: HttpStatus.OK,
       result: `working`,
-      user,
+      detail: {
+        user,
+      },
     };
   }
 

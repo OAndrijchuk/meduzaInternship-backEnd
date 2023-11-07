@@ -4,14 +4,16 @@ import {
   Entity,
   JoinColumn,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
 export class Tokens {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
+  id: number;
+
   @OneToOne(() => User, user => user.tokens)
   @JoinColumn({ name: 'userId' })
   userId: User;

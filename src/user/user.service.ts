@@ -7,11 +7,14 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { paginate } from 'src/utils/pagination.util';
+import { Tokens } from './entities/tokens.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Tokens)
+    private readonly tokensRepository: Repository<Tokens>,
   ) {}
 
   @TryCatchWrapper()
@@ -99,5 +102,14 @@ export class UserService {
     const newUser = await this.userRepository.remove(user);
 
     return await this.responseNormalize({ user: newUser });
+  }
+
+  @TryCatchWrapper()
+  async findOne(email: string) {
+    return await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
   }
 }

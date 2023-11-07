@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -23,6 +24,7 @@ export class User {
   password: string;
 
   @OneToOne(() => Tokens, tokens => tokens.userId, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'tokenId' })
   tokens: Tokens;
 
   @CreateDateColumn()

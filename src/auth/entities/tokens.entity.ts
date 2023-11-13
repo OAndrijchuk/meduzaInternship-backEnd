@@ -7,22 +7,22 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Tokens {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User, user => user.tokens)
+  @OneToOne(() => User, user => user.tokenId)
   @JoinColumn({ name: 'userId' })
   userId: User;
 
-  @Column()
-  acesToken: string;
-
-  @Column()
+  @Column({ default: '', nullable: false })
   refreshToken: string;
+
+  @Column({ default: '', nullable: false })
+  accessToken: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -10,4 +10,8 @@ export class CreateUserDto {
   userName: string;
 
   token: string;
+
+  verify: boolean;
+
+  verificationKey: string;
 }

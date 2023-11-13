@@ -1,4 +1,4 @@
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,7 +7,13 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { paginate } from 'src/utils/pagination.util';
-import { Tokens } from './entities/tokens.entity';
+import { Tokens } from 'src/auth/entities/tokens.entity';
+import { v4 as uuidv4 } from 'uuid';
+// import sendEmail from 'src/utils/sendEmail';
+// import * as dotenv from 'dotenv';
+// dotenv.config();
+
+// const { BASE_URL } = process.env;
 
 @Injectable()
 export class UserService {
@@ -18,11 +24,9 @@ export class UserService {
   ) {}
 
   @TryCatchWrapper()
-  private async checkEmail(createUserDto) {
+  private async checkEmail(email: string) {
     const existUser = await this.userRepository.findOne({
-      where: {
-        email: createUserDto.email,
-      },
+      where: { email },
     });
 
     if (existUser) {
@@ -32,11 +36,10 @@ export class UserService {
   }
 
   @TryCatchWrapper()
-  private async checkUserExist(id) {
+  private async checkUserExist(id: number) {
     const user = await this.userRepository.findOne({
-      where: {
-        id,
-      },
+      where: { id },
+      relations: ['tokenId'],
     });
 
     if (!user) {
@@ -46,54 +49,97 @@ export class UserService {
   }
 
   @TryCatchWrapper()
-  private async responseNormalize(res: object, status: number = HttpStatus.OK) {
-    return {
-      status_code: status,
-      detail: res,
-      result: 'working',
-    };
+  async responseUserNormalize(res: any) {
+    const { id, email, userName, isVerify } = res;
+    const normalizeRes = { id, email, userName, isVerify };
+    return normalizeRes;
   }
 
   @TryCatchWrapper()
-  async findAll(page: number, limit: number) {
+  async findAll(page: number = 1, limit: number = 20) {
     const users = await this.userRepository.find();
-    const paginatedUsers = paginate(users, { page, limit });
 
-    return await this.responseNormalize({ users: paginatedUsers });
+    const paginatedUsers = paginate(users, { page, limit });
+    const newUsers = paginatedUsers.map(
+      async user => await this.responseUserNormalize(user),
+    );
+
+    return await Promise.all(newUsers);
   }
 
   @TryCatchWrapper()
   async create(createUserDto: CreateUserDto) {
-    await this.checkEmail(createUserDto);
+    await this.checkEmail(createUserDto.email);
+
     const hashPassword = await bcrypt.hash(createUserDto.password, 10);
+    const verificationKey = uuidv4();
     const user = await this.userRepository.save({
       ...createUserDto,
       password: hashPassword,
+      verificationKey,
       token: '',
     });
+    const setTok = await this.tokensRepository.save({
+      userId: user,
+    });
+    await this.userRepository.update(user.id, {
+      tokenId: setTok,
+    });
+    // const massage = {
+    //   userEmail: user.email,
+    //   title: 'NodeJS verification!',
+    //   bodyContent: `<a target="_blank" href="${BASE_URL}/auth/verify/${verificationKey}">!!!Click to verify your email!!!</a>`,
+    // };
+    // sendEmail(massage);
 
-    return await this.responseNormalize({ user }, HttpStatus.CREATED);
+    return user;
+  }
+  @TryCatchWrapper()
+  async createAuth0(userOptions: any) {
+    const user = await this.userRepository.save({
+      ...userOptions,
+      password: '',
+      isVerify: true,
+      token: '',
+    });
+    const setTok = await this.tokensRepository.save({
+      userId: user,
+    });
+    await this.userRepository.update(user.id, {
+      tokenId: setTok,
+    });
+    return user;
   }
 
   @TryCatchWrapper()
   async findOneByID(id: number) {
     const user = await this.checkUserExist(id);
+    return user;
+  }
 
-    return await this.responseNormalize({ user });
+  @TryCatchWrapper()
+  async findOneByEmail(email: string) {
+    const existUser = await this.userRepository.findOne({
+      where: { email },
+      relations: ['tokenId'],
+    });
+    if (!existUser) {
+      throw new BadRequestException(`User with email:${email} does not exist!`);
+    }
+    return existUser;
   }
 
   @TryCatchWrapper()
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.checkUserExist(id);
 
-    const updateData = { ...updateUserDto };
     if (updateUserDto.password) {
-      updateData.password = await bcrypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
-    const updatedUser = { ...user, ...updateData };
+    const updatedUser = { ...user, ...updateUserDto };
     const newUser = await this.userRepository.save(updatedUser);
 
-    return await this.responseNormalize({ user: newUser });
+    return await this.responseUserNormalize(newUser);
   }
 
   @TryCatchWrapper()
@@ -101,15 +147,6 @@ export class UserService {
     const user = await this.checkUserExist(id);
     const newUser = await this.userRepository.remove(user);
 
-    return await this.responseNormalize({ user: newUser });
-  }
-
-  @TryCatchWrapper()
-  async findOne(email: string) {
-    return await this.userRepository.findOne({
-      where: {
-        email,
-      },
-    });
+    return await this.responseUserNormalize({ user: newUser });
   }
 }

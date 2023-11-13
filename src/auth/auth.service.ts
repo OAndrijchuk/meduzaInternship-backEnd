@@ -10,12 +10,12 @@ import { IResponsToken, IResponsUser, IToken } from 'src/types/types';
 import { Tokens } from 'src/auth/entities/tokens.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-// import * as dotenv from 'dotenv';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { User } from 'src/user/entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { cookieOptions } from 'src/utils/save-cookie-obj';
-
+import { Response } from 'express';
+// import * as dotenv from 'dotenv';
 // dotenv.config();
 // const { JWT_SECRET } = process.env;
 
@@ -89,7 +89,7 @@ export class AuthService {
   }
 
   @TryCatchWrapper()
-  async signIn(res, userEmail: string, password: string) {
+  async signIn(res: Response, userEmail: string, password: string) {
     const user = await this.validateUser(userEmail, password);
     const { id, email, userName } = user;
     const tokens = await this.generateTokens({
@@ -139,11 +139,11 @@ export class AuthService {
   }
 
   @TryCatchWrapper()
-  async refresh(res, refhToken: string) {
-    await this.validateToken(refhToken);
+  async refresh(res: Response, refToken: string) {
+    await this.validateToken(refToken);
 
     const token = await this.tokensRepository.findOne({
-      where: { refreshToken: refhToken },
+      where: { refreshToken: refToken },
       relations: ['userId'],
     });
 

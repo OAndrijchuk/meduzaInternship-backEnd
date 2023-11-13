@@ -4,6 +4,7 @@ import { Injectable, Req } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IUser } from 'src/types/types';
 import { UserService } from 'src/user/user.service';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(@Req() req, user: IUser): Promise<any> {
+  async validate(@Req() req: Request, user: IUser): Promise<any> {
     const newUser = await this.userService.findOneByEmail(user.email);
     req.user = newUser;
     return newUser;

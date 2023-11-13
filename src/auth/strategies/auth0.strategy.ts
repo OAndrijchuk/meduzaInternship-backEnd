@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Req } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { Request } from 'express';
 
 dotenv.config();
 
@@ -29,7 +30,7 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
     });
   }
 
-  async validate(user: any): Promise<any> {
+  async validate(@Req() req: Request, user: any): Promise<any> {
     const newUser = await this.userRepository.findOne({
       where: { email: user.email },
       relations: ['tokenId'],
@@ -37,10 +38,10 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
     if (!newUser) {
       const createOptions = { email: user.email, userName: user.name };
       const auth0User = await this.userService.createAuth0(createOptions);
-      // req.user = auth0User;
+      req.user = auth0User;
       return auth0User;
     }
-    // req.user = newUser;
+    req.user = newUser;
     return newUser;
   }
 }

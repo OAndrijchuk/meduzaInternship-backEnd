@@ -31,6 +31,7 @@ export class AuthController {
   async signUp(@Body() createUserDto: CreateUserDto): Promise<IResponsUser> {
     return this.authService.signUp(createUserDto);
   }
+
   @HttpCode(200)
   @Post('signIn')
   async signIn(

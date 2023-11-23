@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   controllers: [AppController],
@@ -25,11 +26,15 @@ import { LoggerMiddleware } from './utils/logger.middleware';
         password: configService.get('TYPEORM_PASSWORD'),
         database: configService.get('TYPEORM_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        migrations: [__dirname + '/migrations/*{.ts,.js}'],
-        synchronize: false,
+        migrations: [__dirname + '/migrations/*{.ts,.js'],
+        synchronize: true,
+        autoLoadEntities: true,
+        logging: true,
+        logger: 'file',
       }),
     }),
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule implements NestModule {

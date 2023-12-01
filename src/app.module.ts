@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
 import { AuthModule } from './auth/auth.module';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   controllers: [AppController],
@@ -20,7 +21,6 @@ import { AuthModule } from './auth/auth.module';
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('TYPEORM_HOST'),
-        // host: 'postgres-db',
         port: configService.get('TYPEORM_PORT'),
         username: configService.get('TYPEORM_USERNAME'),
         password: configService.get('TYPEORM_PASSWORD'),
@@ -35,6 +35,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    CompanyModule,
   ],
 })
 export class AppModule implements NestModule {

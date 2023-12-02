@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from './utils/logger.middleware';
 import { AuthModule } from './auth/auth.module';
 import { CompanyModule } from './company/company.module';
+import { CompanyInviteModule } from './company-invite/company-invite.module';
+import { UserRequestModule } from './user-request/user-request.module';
 
 @Module({
   controllers: [AppController],
@@ -36,6 +38,8 @@ import { CompanyModule } from './company/company.module';
     UserModule,
     AuthModule,
     CompanyModule,
+    CompanyInviteModule,
+    UserRequestModule,
   ],
 })
 export class AppModule implements NestModule {

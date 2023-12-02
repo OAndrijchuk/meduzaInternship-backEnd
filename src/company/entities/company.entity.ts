@@ -10,8 +10,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
-import { Invitation } from './invitations.entity';
-import { Candidates } from 'src/user/entities/candidates.entity';
+import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity';
+import { UserRequest } from 'src/user-request/entities/user-request.entity';
+import { IResponsUser } from 'src/types/types';
 
 @Entity()
 export class Company {
@@ -22,7 +23,7 @@ export class Company {
   companyName: string;
 
   @ManyToOne(() => User, user => user.myCompanies)
-  owner: User;
+  owner: IResponsUser;
 
   @Column()
   description: string;
@@ -31,13 +32,13 @@ export class Company {
   @JoinColumn({ name: 'employee' })
   employee: User[];
 
-  @OneToMany(() => Invitation, invitation => invitation.company)
+  @OneToMany(() => CompanyInvite, invitation => invitation.company)
   @JoinColumn({ name: 'invitations' })
-  invitations: Invitation[];
+  invitations: CompanyInvite[];
 
-  @OneToMany(() => Candidates, candidate => candidate)
+  @OneToMany(() => UserRequest, candidate => candidate)
   @JoinColumn({ name: 'candidates' })
-  candidates: Candidates[];
+  candidates: UserRequest[];
 
   @CreateDateColumn()
   createdAt: Date;

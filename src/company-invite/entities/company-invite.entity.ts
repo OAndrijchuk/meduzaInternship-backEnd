@@ -8,10 +8,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
-import { Company } from './company.entity';
+import { Company } from 'src/company/entities/company.entity';
 
 @Entity()
-export class Invitation {
+export class CompanyInvite {
   @PrimaryGeneratedColumn()
   id: number;
 

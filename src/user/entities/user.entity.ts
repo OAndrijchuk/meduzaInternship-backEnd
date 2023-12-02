@@ -11,8 +11,8 @@ import {
 } from 'typeorm';
 import { Tokens } from '../../auth/entities/tokens.entity';
 import { Company } from 'src/company/entities/company.entity';
-import { Invitation } from 'src/company/entities/invitations.entity';
-import { Candidates } from './candidates.entity';
+import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity';
+import { UserRequest } from 'src/user-request/entities/user-request.entity';
 
 @Entity()
 export class User {
@@ -36,13 +36,13 @@ export class User {
   @JoinColumn({ name: 'myWork' })
   myWork: Company[];
 
-  @OneToMany(() => Invitation, invitation => invitation.user)
+  @OneToMany(() => CompanyInvite, invitation => invitation.user)
   @JoinColumn({ name: 'offers' })
-  offers: Invitation[];
+  offers: CompanyInvite[];
 
-  @OneToMany(() => Candidates, candidate => candidate.user)
+  @OneToMany(() => UserRequest, candidate => candidate.user)
   @JoinColumn({ name: 'candidates' })
-  candidates: Candidates[];
+  candidates: UserRequest[];
 
   @OneToOne(() => Tokens, tokens => tokens.userId, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'tokenId' })

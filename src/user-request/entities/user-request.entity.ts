@@ -11,7 +11,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Company } from 'src/company/entities/company.entity';
 
 @Entity()
-export class Candidates {
+export class UserRequest {
   @PrimaryGeneratedColumn()
   id: number;
 

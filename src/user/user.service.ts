@@ -121,7 +121,7 @@ export class UserService {
   async findOneByEmail(email: string) {
     const existUser = await this.userRepository.findOne({
       where: { email },
-      relations: ['tokenId'],
+      relations: ['tokenId', 'candidates'],
     });
     if (!existUser) {
       throw new BadRequestException(`User with email:${email} does not exist!`);

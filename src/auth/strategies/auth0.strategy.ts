@@ -37,10 +37,10 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
     if (!newUser) {
       const createOptions = { email: req.email, userName: req.name };
       const auth0User = await this.userService.createAuth0(createOptions);
-      req.user = auth0User;
+      // req.user = auth0User;
       return auth0User;
     }
-    req.user = newUser;
+    // req.user = newUser;
     return newUser;
   }
 }

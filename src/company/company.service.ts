@@ -19,6 +19,7 @@ export class CompanyService {
   private async checkCompanyExist(companyName: string, owner: IResponsUser) {
     const existCompany = await this.companyRepository.findOne({
       where: { companyName, owner },
+      relations: ['owner', 'employee'],
     });
 
     if (existCompany) {
@@ -32,6 +33,7 @@ export class CompanyService {
   private async checkCompany(id: number, owner: IResponsUser) {
     const existCompany = await this.companyRepository.findOne({
       where: { id, owner },
+      relations: ['owner', 'employee'],
     });
 
     if (!existCompany) {
@@ -54,14 +56,19 @@ export class CompanyService {
   }
   @TryCatchWrapper()
   async findAll(page: number, limit: number) {
-    const companies = await this.companyRepository.find();
+    const companies = await this.companyRepository.find({
+      relations: ['owner', 'invitations', 'candidates'],
+    });
     const paginatedCompanies = paginate(companies, { page, limit });
     return paginatedCompanies;
   }
 
   @TryCatchWrapper()
   async findOne(id: number) {
-    const company = await this.companyRepository.findOne({ where: { id } });
+    const company = await this.companyRepository.findOne({
+      where: { id },
+      relations: ['owner', 'invitations', 'candidates'],
+    });
     if (!company) {
       throw new BadRequestException(`Company with id:${id} does not exist!`);
     }

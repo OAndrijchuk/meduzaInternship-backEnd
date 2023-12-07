@@ -50,8 +50,17 @@ export class UserService {
 
   @TryCatchWrapper()
   async responseUserNormalize(res: any) {
-    const { id, email, userName, isVerify } = res;
-    const normalizeRes = { id, email, userName, isVerify };
+    const { id, email, userName, isVerify, candidates, offers, myCompanies } =
+      res;
+    const normalizeRes = {
+      id,
+      email,
+      userName,
+      isVerify,
+      candidates,
+      offers,
+      myCompanies,
+    };
     return normalizeRes;
   }
 
@@ -121,7 +130,7 @@ export class UserService {
   async findOneByEmail(email: string) {
     const existUser = await this.userRepository.findOne({
       where: { email },
-      relations: ['tokenId', 'candidates'],
+      relations: ['tokenId', 'candidates', 'offers', 'myCompanies'],
     });
     if (!existUser) {
       throw new BadRequestException(`User with email:${email} does not exist!`);
@@ -145,7 +154,9 @@ export class UserService {
   @TryCatchWrapper()
   async remove(id: number) {
     const user = await this.checkUserExist(id);
-    const newUser = await this.userRepository.remove(user);
+    const newUser = await this.userRepository.delete({
+      id,
+    });
 
     return await this.responseUserNormalize({ user: newUser });
   }

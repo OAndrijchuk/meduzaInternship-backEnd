@@ -22,7 +22,9 @@ export class Company {
   @Column()
   companyName: string;
 
-  @ManyToOne(() => User, user => user.myCompanies)
+  @ManyToOne(() => User, user => user.myCompanies, {
+    onDelete: 'CASCADE',
+  })
   owner: IResponsUser;
 
   @Column()
@@ -36,7 +38,7 @@ export class Company {
   @JoinColumn({ name: 'invitations' })
   invitations: CompanyInvite[];
 
-  @OneToMany(() => UserRequest, candidate => candidate)
+  @OneToMany(() => UserRequest, candidate => candidate.user)
   @JoinColumn({ name: 'candidates' })
   candidates: UserRequest[];
 

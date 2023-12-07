@@ -1,1 +1,5 @@
-export class CreateUserRequestDto {}
+export class CreateUserRequestDto {
+  companyId: number;
+
+  description: string;
+}

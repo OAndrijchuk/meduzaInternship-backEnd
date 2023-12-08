@@ -48,7 +48,6 @@ export class UserController {
 
   @Delete()
   async remove(@Req() req): Promise<IResponsUser> {
-    console.log(+req.user.id);
     return this.userService.remove(+req.user.id);
   }
 }

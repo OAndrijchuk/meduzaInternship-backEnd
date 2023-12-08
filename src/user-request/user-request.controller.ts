@@ -25,25 +25,26 @@ export class UserRequestController {
   }
 
   @Get()
-  findAll() {
-    return this.userRequestService.findAll();
+  findAll(@Req() req: any) {
+    return this.userRequestService.findAll(req.user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userRequestService.findOne(+id);
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.userRequestService.findOne(+id, req.user);
   }
 
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateUserRequestDto: UpdateUserRequestDto,
+    @Req() req: any,
   ) {
-    return this.userRequestService.update(+id, updateUserRequestDto);
+    return this.userRequestService.update(+id, updateUserRequestDto, req.user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userRequestService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.userRequestService.remove(+id, req.user);
   }
 }

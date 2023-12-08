@@ -26,8 +26,8 @@ export class User {
   @Column({ unique: true, nullable: false })
   email: string;
 
-  @Exclude()
-  @Column({ nullable: false })
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: false, select: false })
   password: string;
 
   @OneToMany(() => Company, company => company.owner, {
@@ -68,8 +68,8 @@ export class User {
   @Column({ default: false })
   isVerify: boolean;
 
-  @Exclude()
-  @Column({ default: '' })
+  @Exclude({ toPlainOnly: true })
+  @Column({ default: '', select: false })
   verificationKey: string;
 
   @CreateDateColumn()

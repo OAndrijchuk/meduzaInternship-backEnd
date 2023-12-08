@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -31,30 +35,83 @@ export class UserRequestService {
     return existCompany;
   }
 
+  @TryCatchWrapper()
+  private async checkUserRequest(company: Company, user: User) {
+    const allUserRequest = await this.findAll(user);
+    const existRequest = allUserRequest.filter(
+      req => req.company.id === company.id,
+    );
+    if (existRequest.length) {
+      throw new BadRequestException(`This request already exists!`);
+    }
+  }
+
+  @TryCatchWrapper()
   async create(createUserRequestDto: CreateUserRequestDto, user: User) {
     const company = await this.checkCompany(createUserRequestDto.companyId);
+    await this.checkUserRequest(company, user);
     const newUserReq = await this.userRequestRepository.save({
       company,
       user,
       description: createUserRequestDto.description,
     });
+    const { id, userName, email, isVerify } = user;
+    const response = { ...newUserReq, user: { id, userName, email, isVerify } };
 
-    return newUserReq;
+    return response;
   }
 
-  async findAll() {
-    return `This action returns all userRequest`;
+  @TryCatchWrapper()
+  async findAll(user: User) {
+    const allRequests = await this.userRequestRepository.find({
+      relations: ['user', 'company'],
+    });
+    const response = allRequests.filter(req => req.user.id === user.id);
+
+    return response;
   }
 
-  async findOne(id: number) {
-    return `This action returns a #${id} userRequest`;
+  @TryCatchWrapper()
+  async findOne(id: number, user: User) {
+    const request = await this.userRequestRepository.findOne({
+      where: { id },
+      relations: ['user', 'company', 'company.owner'],
+    });
+    if (!request) {
+      throw new NotFoundException(`Request with id ${id} not found!`);
+    }
+
+    if (request.user.id === user.id || +request.company.owner.id === user.id) {
+      return request;
+    }
+    throw new BadRequestException(`You do not have request with id ${id}!`);
   }
 
-  async update(id: number, updateUserRequestDto: UpdateUserRequestDto) {
-    return `This action updates a #${id} userRequest`;
+  @TryCatchWrapper()
+  async update(
+    id: number,
+    updateUserRequestDto: UpdateUserRequestDto,
+    user: User,
+  ) {
+    const userRequest = await this.findOne(id, user);
+    if (
+      +userRequest.company.owner.id === user.id &&
+      updateUserRequestDto.status === 'fulfilled'
+    ) {
+      console.log('Welcome to our company!!!');
+    }
+    await this.userRequestRepository.update(id, updateUserRequestDto);
+
+    return { ...userRequest, ...updateUserRequestDto };
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} userRequest`;
+  @TryCatchWrapper()
+  async remove(id: number, user: User) {
+    const request = await this.findOne(id, user);
+    if (request.user.id !== user.id) {
+      throw new BadRequestException(`You do not have request with id ${id}!`);
+    }
+    await this.userRequestRepository.delete({ id });
+    return request;
   }
 }

@@ -32,6 +32,7 @@ export class AuthService {
   @TryCatchWrapper()
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findOneByEmail(email);
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (user && isPasswordValid) {
       return user;

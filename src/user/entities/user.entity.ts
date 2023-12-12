@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   OneToMany,
   OneToOne,
@@ -37,11 +38,11 @@ export class User {
   @JoinColumn({ name: 'myCompanies' })
   myCompanies: Company[];
 
-  @ManyToMany(() => Company, company => company.employee, {
+  @ManyToMany(() => Company, company => company.candidates, {
     onDelete: 'CASCADE',
     cascade: true,
   })
-  @JoinColumn({ name: 'myWork' })
+  @JoinTable()
   myWork: Company[];
 
   @OneToMany(() => CompanyInvite, invitation => invitation.user, {

@@ -29,8 +29,8 @@ export class CompanyController {
   @Post()
   @UsePipes(new ValidationPipe())
   async create(@Req() req: any, @Body() createCompanyDto: CreateCompanyDto) {
-    const owner = await this.userService.responseUserNormalize(req.user);
-    return this.companyService.create(createCompanyDto, owner);
+    // const owner = await this.userService.responseUserNormalize(req.user);
+    return this.companyService.create(createCompanyDto, req.user);
   }
 
   @Get()

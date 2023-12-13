@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCompanyInviteDto } from './dto/create-company-invite.dto';
 import { UpdateCompanyInviteDto } from './dto/update-company-invite.dto';
 import { User } from 'src/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompanyInvite } from './entities/company-invite.entity';
 import { Repository } from 'typeorm';
-// import { Company } from 'src/company/entities/company.entity';
+import { Company } from 'src/company/entities/company.entity';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { CompanyService } from 'src/company/company.service';
 import { IResponsUser } from 'src/types/types';
@@ -16,8 +20,8 @@ export class CompanyInviteService {
   constructor(
     @InjectRepository(CompanyInvite)
     private readonly companyInviteRepository: Repository<CompanyInvite>,
-    // @InjectRepository(Company)
-    // private readonly companyRepository: Repository<Company>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly companyService: CompanyService,
     private readonly userService: UserService,
@@ -85,15 +89,47 @@ export class CompanyInviteService {
     return companyInvites;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} companyInvite`;
+  @TryCatchWrapper()
+  async findOne(id: number, user: IResponsUser) {
+    const invite = await this.companyInviteRepository.findOne({
+      where: { id },
+      relations: ['user', 'company'],
+    });
+    if (!invite) {
+      throw new NotFoundException(`Invite with id ${id} not found!!`);
+    }
+    if (+invite.user.id === +user.id || +invite.company.owner.id === +user.id) {
+      return invite;
+    }
+    throw new BadRequestException(`You do not have invite with id ${id}!`);
   }
 
-  update(id: number, updateCompanyInviteDto: UpdateCompanyInviteDto) {
-    return `This action updates a #${id} companyInvite`;
+  @TryCatchWrapper()
+  async update(
+    id: number,
+    updateCompanyInviteDto: UpdateCompanyInviteDto,
+    user: IResponsUser,
+  ) {
+    const invite = await this.findOne(id, user);
+
+    if (
+      +invite.user.id === +user.id &&
+      updateCompanyInviteDto.status === 'fulfilled'
+    ) {
+      console.log('Welcome to our company!!!');
+    }
+    return await this.companyInviteRepository.update(
+      id,
+      updateCompanyInviteDto,
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} companyInvite`;
+  @TryCatchWrapper()
+  async remove(id: number, user: IResponsUser) {
+    const invite = await this.findOne(id, user);
+    if (+invite.company.owner.id === +user.id) {
+      await this.companyInviteRepository.delete({ id });
+    }
+    return invite;
   }
 }

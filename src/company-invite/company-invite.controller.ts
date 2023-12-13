@@ -44,20 +44,24 @@ export class CompanyInviteController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.companyInviteService.findOne(+id);
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    const user = await this.userService.responseUserNormalize(req.user);
+    return this.companyInviteService.findOne(+id, user);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateCompanyInviteDto: UpdateCompanyInviteDto,
+    @Req() req: any,
   ) {
-    return this.companyInviteService.update(+id, updateCompanyInviteDto);
+    const user = await this.userService.responseUserNormalize(req.user);
+    return this.companyInviteService.update(+id, updateCompanyInviteDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companyInviteService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req: any) {
+    const user = await this.userService.responseUserNormalize(req.user);
+    return this.companyInviteService.remove(+id, user);
   }
 }

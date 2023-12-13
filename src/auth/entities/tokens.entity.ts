@@ -14,7 +14,9 @@ export class Tokens {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User, user => user.tokenId)
+  @OneToOne(() => User, user => user.tokenId, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
   userId: User;
 

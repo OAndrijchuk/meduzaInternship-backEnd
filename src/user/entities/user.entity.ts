@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   OneToMany,
   OneToOne,
@@ -13,6 +14,7 @@ import { Tokens } from '../../auth/entities/tokens.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity';
 import { UserRequest } from 'src/user-request/entities/user-request.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -25,33 +27,50 @@ export class User {
   @Column({ unique: true, nullable: false })
   email: string;
 
-  @Column({ nullable: false })
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: false, select: false })
   password: string;
 
-  @OneToMany(() => Company, company => company.owner, { onDelete: 'CASCADE' })
+  @OneToMany(() => Company, company => company.owner, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
   @JoinColumn({ name: 'myCompanies' })
   myCompanies: Company[];
 
-  @ManyToMany(() => Company, company => company.employee)
-  @JoinColumn({ name: 'myWork' })
+  @ManyToMany(() => Company, company => company.candidates, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
+  @JoinTable()
   myWork: Company[];
 
-  @OneToMany(() => CompanyInvite, invitation => invitation.user)
+  @OneToMany(() => CompanyInvite, invitation => invitation.user, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
   @JoinColumn({ name: 'offers' })
   offers: CompanyInvite[];
 
-  @OneToMany(() => UserRequest, candidate => candidate.user)
+  @OneToMany(() => UserRequest, candidate => candidate.user, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
   @JoinColumn({ name: 'candidates' })
   candidates: UserRequest[];
 
-  @OneToOne(() => Tokens, tokens => tokens.userId, { onDelete: 'CASCADE' })
+  @OneToOne(() => Tokens, tokens => tokens.userId, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
   @JoinColumn({ name: 'tokenId' })
   tokenId: Tokens;
 
   @Column({ default: false })
   isVerify: boolean;
 
-  @Column({ default: '' })
+  @Exclude({ toPlainOnly: true })
+  @Column({ default: '', select: false })
   verificationKey: string;
 
   @CreateDateColumn()

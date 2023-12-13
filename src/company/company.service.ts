@@ -7,21 +7,25 @@ import { Repository } from 'typeorm';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { IResponsUser } from 'src/types/types';
 import { paginate } from 'src/utils/pagination.util';
+import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    private readonly userService: UserService,
   ) {}
 
   @TryCatchWrapper()
   private async checkCompanyExist(companyName: string, owner: IResponsUser) {
-    const existCompany = await this.companyRepository.findOne({
-      where: { companyName, owner },
+    const existCompany = await this.companyRepository.find({
+      where: { companyName },
+      relations: ['owner', 'employee'],
     });
-
-    if (existCompany) {
+    const isExist = existCompany.some(company => company.owner.id === owner.id);
+    if (isExist) {
       throw new BadRequestException(
         'This company name in this owner already exists!',
       );
@@ -29,39 +33,50 @@ export class CompanyService {
     return existCompany;
   }
   @TryCatchWrapper()
-  private async checkCompany(id: number, owner: IResponsUser) {
+  async checkCompany(id: number, owner: IResponsUser) {
     const existCompany = await this.companyRepository.findOne({
-      where: { id, owner },
+      where: { id },
+      relations: ['owner', 'employee'],
     });
-
     if (!existCompany) {
-      throw new BadRequestException(
-        `This company in this owner doesn't exists!`,
-      );
+      throw new BadRequestException(`This company doesn't exists!`);
     }
-    return existCompany;
+    if (existCompany.owner.id === owner.id) return existCompany;
+    throw new BadRequestException(`This company in this owner doesn't exists!`);
   }
 
   @TryCatchWrapper()
-  async create(createCompanyDto: CreateCompanyDto, owner: IResponsUser) {
+  async create(
+    createCompanyDto: CreateCompanyDto,
+    // owner: IResponsUser,
+    allOwner: User,
+  ) {
+    const owner = await this.userService.responseUserNormalize(allOwner);
     await this.checkCompanyExist(createCompanyDto.companyName, owner);
+
     const company = await this.companyRepository.save({
       ...createCompanyDto,
       owner,
+      employee: [allOwner],
     });
-
-    return company;
+    const newEmployee = owner;
+    return { ...company, employee: [newEmployee] };
   }
   @TryCatchWrapper()
   async findAll(page: number, limit: number) {
-    const companies = await this.companyRepository.find();
+    const companies = await this.companyRepository.find({
+      relations: ['owner', 'invitations', 'candidates', 'employee'],
+    });
     const paginatedCompanies = paginate(companies, { page, limit });
     return paginatedCompanies;
   }
 
   @TryCatchWrapper()
   async findOne(id: number) {
-    const company = await this.companyRepository.findOne({ where: { id } });
+    const company = await this.companyRepository.findOne({
+      where: { id },
+      relations: ['owner', 'invitations', 'candidates', 'employee'],
+    });
     if (!company) {
       throw new BadRequestException(`Company with id:${id} does not exist!`);
     }
@@ -89,9 +104,7 @@ export class CompanyService {
   async remove(id: number, owner: IResponsUser) {
     const company = await this.checkCompany(id, owner);
 
-    await this.companyRepository.delete({
-      id,
-    });
+    await this.companyRepository.remove(company);
 
     return company;
   }

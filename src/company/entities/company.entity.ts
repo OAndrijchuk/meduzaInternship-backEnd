@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -22,21 +23,25 @@ export class Company {
   @Column()
   companyName: string;
 
-  @ManyToOne(() => User, user => user.myCompanies)
+  @ManyToOne(() => User, user => user.myCompanies, {
+    onDelete: 'CASCADE',
+  })
   owner: IResponsUser;
 
   @Column()
   description: string;
 
-  @ManyToMany(() => User, user => user.myWork)
-  @JoinColumn({ name: 'employee' })
+  @ManyToMany(() => User, user => user.myWork, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable()
   employee: User[];
 
   @OneToMany(() => CompanyInvite, invitation => invitation.company)
   @JoinColumn({ name: 'invitations' })
   invitations: CompanyInvite[];
 
-  @OneToMany(() => UserRequest, candidate => candidate)
+  @OneToMany(() => UserRequest, candidate => candidate.user)
   @JoinColumn({ name: 'candidates' })
   candidates: UserRequest[];
 

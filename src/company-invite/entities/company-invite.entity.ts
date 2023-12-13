@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Company } from 'src/company/entities/company.entity';
+import { StatusType } from 'src/types/types';
 
 @Entity()
 export class CompanyInvite {
@@ -25,6 +26,13 @@ export class CompanyInvite {
 
   @Column()
   description: string;
+
+  @Column({
+    type: 'enum',
+    enum: ['pending', 'fulfilled', 'rejected'],
+    default: 'pending',
+  })
+  status: StatusType;
 
   @CreateDateColumn()
   createdAt: Date;

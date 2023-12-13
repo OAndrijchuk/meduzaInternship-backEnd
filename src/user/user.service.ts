@@ -41,7 +41,6 @@ export class UserService {
       where: { id },
       relations: ['tokenId'],
     });
-
     if (!user) {
       throw new BadRequestException(`User with id:${id} does not exist!`);
     }
@@ -50,8 +49,17 @@ export class UserService {
 
   @TryCatchWrapper()
   async responseUserNormalize(res: any) {
-    const { id, email, userName, isVerify } = res;
-    const normalizeRes = { id, email, userName, isVerify };
+    const { id, email, userName, isVerify, candidates, offers, myCompanies } =
+      res;
+    const normalizeRes = {
+      id,
+      email,
+      userName,
+      isVerify,
+      candidates,
+      offers,
+      myCompanies,
+    };
     return normalizeRes;
   }
 
@@ -60,11 +68,12 @@ export class UserService {
     const users = await this.userRepository.find();
 
     const paginatedUsers = paginate(users, { page, limit });
-    const newUsers = paginatedUsers.map(
-      async user => await this.responseUserNormalize(user),
-    );
+    // const newUsers = paginatedUsers.map(
+    //   async user => await this.responseUserNormalize(user),
+    // );
 
-    return await Promise.all(newUsers);
+    // return await Promise.all(newUsers);
+    return await Promise.all(paginatedUsers);
   }
 
   @TryCatchWrapper()
@@ -121,8 +130,24 @@ export class UserService {
   async findOneByEmail(email: string) {
     const existUser = await this.userRepository.findOne({
       where: { email },
-      relations: ['tokenId', 'candidates'],
+      relations: ['tokenId', 'candidates', 'offers', 'myCompanies'],
+      select: [
+        'password',
+        'verificationKey',
+        'id',
+        'isVerify',
+        'userName',
+        'candidates',
+        'myCompanies',
+        'email',
+        'myWork',
+        'offers',
+        'tokenId',
+        'createdAt',
+        'updatedAt',
+      ],
     });
+
     if (!existUser) {
       throw new BadRequestException(`User with email:${email} does not exist!`);
     }
@@ -144,8 +169,10 @@ export class UserService {
 
   @TryCatchWrapper()
   async remove(id: number) {
-    const user = await this.checkUserExist(id);
-    const newUser = await this.userRepository.remove(user);
+    await this.checkUserExist(id);
+    const newUser = await this.userRepository.delete({
+      id,
+    });
 
     return await this.responseUserNormalize({ user: newUser });
   }

@@ -24,3 +24,5 @@ export interface IResponsUser {
 export interface IResponsToken {
   accessToken: string;
 }
+
+export type StatusType = 'pending' | 'fulfilled' | 'rejected';

@@ -6,10 +6,17 @@ import { User } from './entities/user.entity';
 import { Tokens } from '../auth/entities/tokens.entity';
 import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity';
 import { UserRequest } from 'src/user-request/entities/user-request.entity';
+import { Company } from 'src/company/entities/company.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Tokens, CompanyInvite, UserRequest]),
+    TypeOrmModule.forFeature([
+      User,
+      Tokens,
+      CompanyInvite,
+      UserRequest,
+      Company,
+    ]),
   ],
   controllers: [UserController],
   providers: [UserService],

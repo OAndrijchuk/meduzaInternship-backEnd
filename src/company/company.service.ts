@@ -136,13 +136,18 @@ export class CompanyService {
   }
   @TryCatchWrapper()
   async removeMember(id: number, owner: IResponsUser, memberId: number) {
-    const companyId = await this.checkCompany(id, owner);
+    const companyId = await this.findOne(id);
     const userId = await this.userService.findOneByID(memberId);
-
-    await this.membersRepository.delete({
-      userId,
-      companyId,
-    });
+    if (+companyId.owner.id === +owner.id || +userId.id === +owner.id) {
+      await this.membersRepository.delete({
+        userId,
+        companyId,
+      });
+    } else {
+      throw new BadRequestException(
+        `You do not have sufficient rights to perform this action!`,
+      );
+    }
 
     return companyId;
   }

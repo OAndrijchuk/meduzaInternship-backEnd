@@ -13,6 +13,7 @@ import { Company } from 'src/company/entities/company.entity';
 import { User } from 'src/user/entities/user.entity';
 import { CompanyService } from 'src/company/company.service';
 import { UserService } from 'src/user/user.service';
+import { Members } from 'src/company/entities/members.entity';
 
 @Injectable()
 export class UserRequestService {
@@ -22,6 +23,8 @@ export class UserRequestService {
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Members)
+    private readonly membersRepository: Repository<Members>,
     private readonly companyService: CompanyService,
     private readonly userService: UserService,
   ) {}
@@ -105,20 +108,24 @@ export class UserRequestService {
     const userRequest = await this.findOne(id, user);
     if (
       +userRequest.company.owner.id === user.id &&
-      updateUserRequestDto.status === 'fulfilled'
+      updateUserRequestDto.status
     ) {
       const company = await this.companyService.findOne(userRequest.company.id);
       const worker = await this.userService.findOneByID(userRequest.user.id);
 
-      await this.companyRepository.update(company.id, {
-        employee: [...company.employee, worker],
-      });
-      await this.userRepository.update(worker.id, {
-        myWork: [...worker.myWork, company],
-      });
-      console.log('Welcome to our company!!!');
+      if (updateUserRequestDto.status === 'fulfilled') {
+        await this.membersRepository.save({
+          companyId: company,
+          userId: worker,
+        });
+        await this.userRequestRepository.delete({ id });
+      }
+
+      if (updateUserRequestDto.status === 'rejected') {
+        await this.userRequestRepository.delete({ id });
+      }
     }
-    await this.userRequestRepository.update(id, updateUserRequestDto);
+    // await this.userRequestRepository.update(id, updateUserRequestDto);
 
     return { ...userRequest, ...updateUserRequestDto };
   }

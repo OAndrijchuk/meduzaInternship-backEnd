@@ -126,19 +126,22 @@ export class CompanyInviteService {
         `You cannot change this value on fulfilled!`,
       );
     }
-    if (
-      +invite.user.id === +user.id &&
-      updateCompanyInviteDto.status === 'fulfilled'
-    ) {
+    if (+invite.user.id === +user.id && updateCompanyInviteDto.status) {
       const company = await this.companyService.findOne(invite.company.id);
       const worker = await this.userService.findOneByID(+user.id);
 
-      await this.membersRepository.save({ companyId: company, userId: worker });
+      if (updateCompanyInviteDto.status === 'fulfilled') {
+        await this.membersRepository.save({
+          companyId: company,
+          userId: worker,
+        });
+        await this.companyInviteRepository.delete(id);
+      }
+      if (updateCompanyInviteDto.status === 'rejected') {
+        await this.companyInviteRepository.delete(id);
+      }
     }
-    return await this.companyInviteRepository.update(
-      id,
-      updateCompanyInviteDto,
-    );
+    return invite;
   }
 
   @TryCatchWrapper()

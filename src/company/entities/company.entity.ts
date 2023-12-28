@@ -43,7 +43,7 @@ export class Company {
   @JoinColumn({ name: 'invitations' })
   invitations: CompanyInvite[];
 
-  @OneToMany(() => UserRequest, candidate => candidate.user, {
+  @OneToMany(() => UserRequest, candidate => candidate.company, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'candidates' })

@@ -14,6 +14,7 @@ import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { CompanyService } from 'src/company/company.service';
 import { IResponsUser } from 'src/types/types';
 import { UserService } from 'src/user/user.service';
+import { Members } from 'src/company/entities/members.entity';
 
 @Injectable()
 export class CompanyInviteService {
@@ -23,6 +24,8 @@ export class CompanyInviteService {
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Members)
+    private readonly membersRepository: Repository<Members>,
     private readonly companyService: CompanyService,
     private readonly userService: UserService,
   ) {}
@@ -52,7 +55,7 @@ export class CompanyInviteService {
   ) {
     const company = await this.companyService.checkCompany(companyId, user);
     const isUserInEmployee = company.employee.some(
-      worker => worker.id === createCompanyInviteDto.userId,
+      worker => +worker.id === +createCompanyInviteDto.userId,
     );
 
     if (isUserInEmployee) {
@@ -82,6 +85,7 @@ export class CompanyInviteService {
     const allInvites = await this.companyInviteRepository.find({
       relations: ['user', 'company'],
     });
+
     const companyInvites = allInvites.filter(
       invite => invite.company.id === companyId,
     );
@@ -93,7 +97,7 @@ export class CompanyInviteService {
   async findOne(id: number, user: IResponsUser) {
     const invite = await this.companyInviteRepository.findOne({
       where: { id },
-      relations: ['user', 'company'],
+      relations: ['user', 'company', 'company.owner'],
     });
     if (!invite) {
       throw new NotFoundException(`Invite with id ${id} not found!!`);
@@ -111,12 +115,25 @@ export class CompanyInviteService {
     user: IResponsUser,
   ) {
     const invite = await this.findOne(id, user);
-
+    if (updateCompanyInviteDto.status === 'pending') {
+      throw new BadRequestException(`You cannot change this value on pending!`);
+    }
+    if (
+      +invite.company.owner.id === +user.id &&
+      updateCompanyInviteDto.status === 'fulfilled'
+    ) {
+      throw new BadRequestException(
+        `You cannot change this value on fulfilled!`,
+      );
+    }
     if (
       +invite.user.id === +user.id &&
       updateCompanyInviteDto.status === 'fulfilled'
     ) {
-      console.log('Welcome to our company!!!');
+      const company = await this.companyService.findOne(invite.company.id);
+      const worker = await this.userService.findOneByID(+user.id);
+
+      await this.membersRepository.save({ companyId: company, userId: worker });
     }
     return await this.companyInviteRepository.update(
       id,
@@ -128,7 +145,7 @@ export class CompanyInviteService {
   async remove(id: number, user: IResponsUser) {
     const invite = await this.findOne(id, user);
     if (+invite.company.owner.id === +user.id) {
-      await this.companyInviteRepository.delete({ id });
+      await this.companyInviteRepository.delete(id);
     }
     return invite;
   }

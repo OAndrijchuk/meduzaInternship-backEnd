@@ -16,7 +16,7 @@ import { CombinedAuthGuard } from 'src/auth/guards/combined-Auth.guard';
 import { UserService } from 'src/user/user.service';
 
 @UseGuards(CombinedAuthGuard)
-@Controller(':companyId/invites')
+@Controller('company/:companyId/invites/')
 export class CompanyInviteController {
   constructor(
     private readonly companyInviteService: CompanyInviteService,
@@ -62,6 +62,7 @@ export class CompanyInviteController {
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: any) {
     const user = await this.userService.responseUserNormalize(req.user);
+
     return this.companyInviteService.remove(+id, user);
   }
 }

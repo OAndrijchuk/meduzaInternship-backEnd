@@ -17,14 +17,14 @@ export class CompanyInvite {
   id: number;
 
   @ManyToOne(() => Company, company => company.invitations)
-  @JoinColumn()
+  @JoinColumn({ name: 'company' })
   company: Company;
 
   @ManyToOne(() => User, user => user.myCompanies)
-  @JoinColumn()
+  @JoinColumn({ name: 'user' })
   user: User;
 
-  @Column()
+  @Column({ default: '' })
   description: string;
 
   @Column({

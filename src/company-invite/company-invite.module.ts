@@ -8,10 +8,11 @@ import { UserModule } from 'src/user/user.module';
 import { CompanyInvite } from './entities/company-invite.entity';
 import { CompanyService } from 'src/company/company.service';
 import { User } from 'src/user/entities/user.entity';
+import { Members } from 'src/company/entities/members.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, CompanyInvite, Company]),
+    TypeOrmModule.forFeature([User, CompanyInvite, Company, Members]),
     UserModule,
     CompanyModule,
   ],

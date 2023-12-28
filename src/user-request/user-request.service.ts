@@ -11,6 +11,8 @@ import { Repository } from 'typeorm';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { Company } from 'src/company/entities/company.entity';
 import { User } from 'src/user/entities/user.entity';
+import { CompanyService } from 'src/company/company.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class UserRequestService {
@@ -19,12 +21,16 @@ export class UserRequestService {
     private readonly userRequestRepository: Repository<UserRequest>,
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly companyService: CompanyService,
+    private readonly userService: UserService,
   ) {}
 
   @TryCatchWrapper()
   private async checkCompany(companyId: number) {
     const existCompany = await this.companyRepository.findOne({
       where: { id: companyId },
+      relations: ['employee.userId'],
     });
 
     if (!existCompany) {
@@ -49,6 +55,9 @@ export class UserRequestService {
   @TryCatchWrapper()
   async create(createUserRequestDto: CreateUserRequestDto, user: User) {
     const company = await this.checkCompany(createUserRequestDto.companyId);
+    if (company.employee.some(worker => +worker.userId.id === +user.id)) {
+      throw new BadRequestException(`You are already work in this company!`);
+    }
     await this.checkUserRequest(company, user);
     const newUserReq = await this.userRequestRepository.save({
       company,
@@ -98,6 +107,15 @@ export class UserRequestService {
       +userRequest.company.owner.id === user.id &&
       updateUserRequestDto.status === 'fulfilled'
     ) {
+      const company = await this.companyService.findOne(userRequest.company.id);
+      const worker = await this.userService.findOneByID(userRequest.user.id);
+
+      await this.companyRepository.update(company.id, {
+        employee: [...company.employee, worker],
+      });
+      await this.userRepository.update(worker.id, {
+        myWork: [...worker.myWork, company],
+      });
       console.log('Welcome to our company!!!');
     }
     await this.userRequestRepository.update(id, updateUserRequestDto);

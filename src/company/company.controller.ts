@@ -61,4 +61,15 @@ export class CompanyController {
     const owner = await this.userService.responseUserNormalize(req.user);
     return this.companyService.remove(+companyId, owner);
   }
+
+  @Delete(':id/member')
+  async removeMember(
+    @Param('id') companyId: string,
+    @Req() req: any,
+    @Body() body: any,
+  ) {
+    const owner = await this.userService.responseUserNormalize(req.user);
+    const { memberId } = body;
+    return this.companyService.removeMember(+companyId, owner, memberId);
+  }
 }

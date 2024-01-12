@@ -125,7 +125,6 @@ export class UserRequestService {
         await this.userRequestRepository.delete({ id });
       }
     }
-    // await this.userRequestRepository.update(id, updateUserRequestDto);
 
     return { ...userRequest, ...updateUserRequestDto };
   }

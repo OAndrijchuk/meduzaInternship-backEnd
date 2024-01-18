@@ -4,7 +4,6 @@ import {
   Entity,
   JoinColumn,
   JoinTable,
-  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -15,6 +14,7 @@ import { Company } from 'src/company/entities/company.entity';
 import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity';
 import { UserRequest } from 'src/user-request/entities/user-request.entity';
 import { Exclude } from 'class-transformer';
+import { Members } from 'src/company/entities/members.entity';
 
 @Entity()
 export class User {
@@ -38,12 +38,12 @@ export class User {
   @JoinColumn({ name: 'myCompanies' })
   myCompanies: Company[];
 
-  @ManyToMany(() => Company, company => company.candidates, {
+  @OneToMany(() => Members, member => member.userId, {
     onDelete: 'CASCADE',
     cascade: true,
   })
   @JoinTable()
-  myWork: Company[];
+  myWork: Members[];
 
   @OneToMany(() => CompanyInvite, invitation => invitation.user, {
     onDelete: 'CASCADE',

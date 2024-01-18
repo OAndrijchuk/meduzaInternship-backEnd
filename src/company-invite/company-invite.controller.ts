@@ -16,14 +16,14 @@ import { CombinedAuthGuard } from 'src/auth/guards/combined-Auth.guard';
 import { UserService } from 'src/user/user.service';
 
 @UseGuards(CombinedAuthGuard)
-@Controller(':companyId/invites')
+@Controller('company-invites')
 export class CompanyInviteController {
   constructor(
     private readonly companyInviteService: CompanyInviteService,
     private readonly userService: UserService,
   ) {}
 
-  @Post()
+  @Post(':companyId')
   async create(
     @Body() createCompanyInviteDto: CreateCompanyInviteDto,
     @Req() req: any,
@@ -37,19 +37,19 @@ export class CompanyInviteController {
     );
   }
 
-  @Get()
+  @Get(':companyId')
   async findAll(@Param('companyId') companyId: string, @Req() req: any) {
     const owner = await this.userService.responseUserNormalize(req.user);
     return this.companyInviteService.findAll(+companyId, owner);
   }
 
-  @Get(':id')
+  @Get('/:companyId/:id')
   async findOne(@Param('id') id: string, @Req() req: any) {
     const user = await this.userService.responseUserNormalize(req.user);
     return this.companyInviteService.findOne(+id, user);
   }
 
-  @Patch(':id')
+  @Patch('/:companyId/:id')
   async update(
     @Param('id') id: string,
     @Body() updateCompanyInviteDto: UpdateCompanyInviteDto,
@@ -59,9 +59,10 @@ export class CompanyInviteController {
     return this.companyInviteService.update(+id, updateCompanyInviteDto, user);
   }
 
-  @Delete(':id')
+  @Delete('/:companyId/:id')
   async remove(@Param('id') id: string, @Req() req: any) {
     const user = await this.userService.responseUserNormalize(req.user);
+
     return this.companyInviteService.remove(+id, user);
   }
 }

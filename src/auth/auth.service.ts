@@ -58,7 +58,7 @@ export class AuthService {
   private async generateTokens(payload: object) {
     const accessToken = this.jwtService.sign(payload, {
       // algorithm: 'RS256',
-      expiresIn: '15m',
+      expiresIn: '5m',
     });
     const refreshToken = this.jwtService.sign(payload, {
       // algorithm: 'RS256',

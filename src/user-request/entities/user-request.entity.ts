@@ -24,7 +24,7 @@ export class UserRequest {
   @JoinColumn({ name: 'user' })
   user: User;
 
-  @Column()
+  @Column({ default: '' })
   description: string;
 
   @Column({

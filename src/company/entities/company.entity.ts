@@ -4,7 +4,6 @@ import {
   Entity,
   JoinColumn,
   JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -14,6 +13,7 @@ import { User } from 'src/user/entities/user.entity';
 import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity';
 import { UserRequest } from 'src/user-request/entities/user-request.entity';
 import { IResponsUser } from 'src/types/types';
+import { Members } from './members.entity';
 
 @Entity()
 export class Company {
@@ -31,17 +31,21 @@ export class Company {
   @Column()
   description: string;
 
-  @ManyToMany(() => User, user => user.myWork, {
+  @OneToMany(() => Members, member => member.companyId, {
     onDelete: 'CASCADE',
   })
   @JoinTable()
-  employee: User[];
+  employee: Members[];
 
-  @OneToMany(() => CompanyInvite, invitation => invitation.company)
+  @OneToMany(() => CompanyInvite, invitation => invitation.company, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'invitations' })
   invitations: CompanyInvite[];
 
-  @OneToMany(() => UserRequest, candidate => candidate.user)
+  @OneToMany(() => UserRequest, candidate => candidate.company, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'candidates' })
   candidates: UserRequest[];
 

@@ -8,12 +8,14 @@ import { CompanyInvite } from 'src/company-invite/entities/company-invite.entity
 import { UserRequest } from 'src/user-request/entities/user-request.entity';
 import { Company } from './entities/company.entity';
 import { UserModule } from 'src/user/user.module';
+import { Members } from './entities/members.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       User,
       Tokens,
+      Members,
       CompanyInvite,
       UserRequest,
       Company,

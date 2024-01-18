@@ -9,12 +9,15 @@ import { IResponsUser } from 'src/types/types';
 import { paginate } from 'src/utils/pagination.util';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
+import { Members } from './entities/members.entity';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    @InjectRepository(Members)
+    private readonly membersRepository: Repository<Members>,
     private readonly userService: UserService,
   ) {}
 
@@ -57,16 +60,30 @@ export class CompanyService {
     const company = await this.companyRepository.save({
       ...createCompanyDto,
       owner,
-      employee: [allOwner],
     });
+
+    await this.membersRepository.save({
+      companyId: company,
+      userId: owner,
+    });
+
     const newEmployee = owner;
     return { ...company, employee: [newEmployee] };
   }
   @TryCatchWrapper()
   async findAll(page: number, limit: number) {
     const companies = await this.companyRepository.find({
-      relations: ['owner', 'invitations', 'candidates', 'employee'],
+      relations: [
+        'owner',
+        'invitations',
+        'invitations.user',
+        'candidates',
+        'candidates.user',
+        'employee',
+        'employee.userId',
+      ],
     });
+
     const paginatedCompanies = paginate(companies, { page, limit });
     return paginatedCompanies;
   }
@@ -75,7 +92,16 @@ export class CompanyService {
   async findOne(id: number) {
     const company = await this.companyRepository.findOne({
       where: { id },
-      relations: ['owner', 'invitations', 'candidates', 'employee'],
+      relations: [
+        'owner',
+        'invitations',
+        'invitations.user',
+        'invitations.company.owner',
+        'candidates',
+        'candidates.user',
+        'candidates.company.owner',
+        'employee.userId',
+      ],
     });
     if (!company) {
       throw new BadRequestException(`Company with id:${id} does not exist!`);
@@ -107,5 +133,22 @@ export class CompanyService {
     await this.companyRepository.remove(company);
 
     return company;
+  }
+  @TryCatchWrapper()
+  async removeMember(id: number, owner: IResponsUser, memberId: number) {
+    const companyId = await this.findOne(id);
+    const userId = await this.userService.findOneByID(memberId);
+    if (+companyId.owner.id === +owner.id || +userId.id === +owner.id) {
+      await this.membersRepository.delete({
+        userId,
+        companyId,
+      });
+    } else {
+      throw new BadRequestException(
+        `You do not have sufficient rights to perform this action!`,
+      );
+    }
+
+    return companyId;
   }
 }

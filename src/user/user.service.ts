@@ -49,8 +49,16 @@ export class UserService {
 
   @TryCatchWrapper()
   async responseUserNormalize(res: any) {
-    const { id, email, userName, isVerify, candidates, offers, myCompanies } =
-      res;
+    const {
+      id,
+      email,
+      userName,
+      isVerify,
+      candidates,
+      offers,
+      myCompanies,
+      myWork,
+    } = res;
     const normalizeRes = {
       id,
       email,
@@ -59,6 +67,7 @@ export class UserService {
       candidates,
       offers,
       myCompanies,
+      myWork,
     };
     return normalizeRes;
   }
@@ -130,7 +139,15 @@ export class UserService {
   async findOneByEmail(email: string) {
     const existUser = await this.userRepository.findOne({
       where: { email },
-      relations: ['tokenId', 'candidates', 'offers', 'myCompanies'],
+      relations: [
+        'tokenId',
+        'candidates.user',
+        'candidates.company.owner',
+        'offers.user',
+        'offers.company.owner',
+        'myCompanies',
+        'myWork.companyId',
+      ],
       select: [
         'password',
         'verificationKey',

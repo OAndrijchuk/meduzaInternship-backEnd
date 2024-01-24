@@ -29,8 +29,8 @@ export class CompanyInvite {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'fulfilled', 'rejected'],
-    default: 'pending',
+    enum: [StatusType.Pending, StatusType.Fulfilled, StatusType.Rejected],
+    default: StatusType.Pending,
   })
   status: StatusType;
 

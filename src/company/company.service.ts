@@ -5,11 +5,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Company } from './entities/company.entity';
 import { Repository } from 'typeorm';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
-import { IResponsUser } from 'src/types/types';
+import { IResponsUser, RoleType } from 'src/types/types';
 import { paginate } from 'src/utils/pagination.util';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { Members } from './entities/members.entity';
+import { UpdateMemberDto } from './dto/update-member.dto';
 
 @Injectable()
 export class CompanyService {
@@ -65,6 +66,7 @@ export class CompanyService {
     await this.membersRepository.save({
       companyId: company,
       userId: owner,
+      role: RoleType.Owner,
     });
 
     const newEmployee = owner;
@@ -150,5 +152,38 @@ export class CompanyService {
     }
 
     return companyId;
+  }
+
+  @TryCatchWrapper()
+  async updateMember(
+    id: number,
+    owner: IResponsUser,
+    updateMemberDto: UpdateMemberDto,
+  ) {
+    const { memberId, newRole } = updateMemberDto;
+    const companyId = await this.findOne(id);
+    const member = await this.membersRepository.findOne({
+      where: { id: +memberId },
+      relations: ['userId', 'companyId'],
+    });
+    if (+companyId.owner.id === +owner.id && member) {
+      return await this.membersRepository.save({
+        ...member,
+        role: newRole,
+      });
+    } else {
+      throw new BadRequestException(
+        `You do not have sufficient rights to perform this action!`,
+      );
+    }
+  }
+
+  @TryCatchWrapper()
+  async getCompanyAdmins(id: number) {
+    const admins = await this.membersRepository.find({
+      where: { role: RoleType.Admin, companyId: { id } },
+      relations: ['userId'],
+    });
+    return admins;
   }
 }

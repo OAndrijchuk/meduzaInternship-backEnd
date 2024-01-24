@@ -14,6 +14,7 @@ import { User } from 'src/user/entities/user.entity';
 import { CompanyService } from 'src/company/company.service';
 import { UserService } from 'src/user/user.service';
 import { Members } from 'src/company/entities/members.entity';
+import { StatusType } from 'src/types/types';
 
 @Injectable()
 export class UserRequestService {
@@ -113,7 +114,7 @@ export class UserRequestService {
       const company = await this.companyService.findOne(userRequest.company.id);
       const worker = await this.userService.findOneByID(userRequest.user.id);
 
-      if (updateUserRequestDto.status === 'fulfilled') {
+      if (updateUserRequestDto.status === StatusType.Fulfilled) {
         await this.membersRepository.save({
           companyId: company,
           userId: worker,
@@ -121,7 +122,7 @@ export class UserRequestService {
         await this.userRequestRepository.delete({ id });
       }
 
-      if (updateUserRequestDto.status === 'rejected') {
+      if (updateUserRequestDto.status === StatusType.Rejected) {
         await this.userRequestRepository.delete({ id });
       }
     }

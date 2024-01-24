@@ -1,14 +1,15 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  // JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Company } from './company.entity';
+import { RoleType } from 'src/types/types';
 
 @Entity()
 export class Members {
@@ -18,16 +19,21 @@ export class Members {
   @ManyToOne(() => User, user => user.myWork, {
     onDelete: 'CASCADE',
   })
-  // @JoinTable()
   @JoinColumn()
   userId: User;
 
   @ManyToOne(() => Company, company => company.employee, {
     onDelete: 'CASCADE',
   })
-  // @JoinTable()
   @JoinColumn()
   companyId: Company;
+
+  @Column({
+    type: 'enum',
+    enum: [RoleType.Member, RoleType.Owner, RoleType.Admin],
+    default: RoleType.Member,
+  })
+  role: RoleType;
 
   @CreateDateColumn()
   createdAt: Date;

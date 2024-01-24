@@ -12,7 +12,7 @@ import { Repository } from 'typeorm';
 import { Company } from 'src/company/entities/company.entity';
 import { TryCatchWrapper } from 'src/decorators/error-cach.decorator';
 import { CompanyService } from 'src/company/company.service';
-import { IResponsUser } from 'src/types/types';
+import { IResponsUser, StatusType } from 'src/types/types';
 import { UserService } from 'src/user/user.service';
 import { Members } from 'src/company/entities/members.entity';
 
@@ -115,12 +115,12 @@ export class CompanyInviteService {
     user: IResponsUser,
   ) {
     const invite = await this.findOne(id, user);
-    if (updateCompanyInviteDto.status === 'pending') {
+    if (updateCompanyInviteDto.status === StatusType.Pending) {
       throw new BadRequestException(`You cannot change this value on pending!`);
     }
     if (
       +invite.company.owner.id === +user.id &&
-      updateCompanyInviteDto.status === 'fulfilled'
+      updateCompanyInviteDto.status === StatusType.Fulfilled
     ) {
       throw new BadRequestException(
         `You cannot change this value on fulfilled!`,
@@ -130,14 +130,14 @@ export class CompanyInviteService {
       const company = await this.companyService.findOne(invite.company.id);
       const worker = await this.userService.findOneByID(+user.id);
 
-      if (updateCompanyInviteDto.status === 'fulfilled') {
+      if (updateCompanyInviteDto.status === StatusType.Fulfilled) {
         await this.membersRepository.save({
           companyId: company,
           userId: worker,
         });
         await this.companyInviteRepository.delete(id);
       }
-      if (updateCompanyInviteDto.status === 'rejected') {
+      if (updateCompanyInviteDto.status === StatusType.Rejected) {
         await this.companyInviteRepository.delete(id);
       }
     }

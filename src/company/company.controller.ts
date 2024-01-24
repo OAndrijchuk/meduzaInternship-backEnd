@@ -17,6 +17,8 @@ import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CombinedAuthGuard } from 'src/auth/guards/combined-Auth.guard';
 import { UserService } from 'src/user/user.service';
+import { UpdateMemberDto } from './dto/update-member.dto';
+import { IResponsUser } from 'src/types/types';
 
 @UseGuards(CombinedAuthGuard)
 @Controller('company')
@@ -71,5 +73,22 @@ export class CompanyController {
     const owner = await this.userService.responseUserNormalize(req.user);
     const { memberId } = body;
     return this.companyService.removeMember(+companyId, owner, memberId);
+  }
+
+  @Patch(':id/member')
+  async updateMember(
+    @Param('id') companyId: string,
+    @Body() updateMemberDto: UpdateMemberDto,
+    @Req() req: any,
+  ) {
+    const owner: IResponsUser = await this.userService.responseUserNormalize(
+      req.user,
+    );
+    return this.companyService.updateMember(+companyId, owner, updateMemberDto);
+  }
+
+  @Get(':id/member/admins')
+  async getCompanyAdmins(@Param('id') companyId: string) {
+    return this.companyService.getCompanyAdmins(+companyId);
   }
 }

@@ -25,4 +25,14 @@ export interface IResponsToken {
   accessToken: string;
 }
 
-export type StatusType = 'pending' | 'fulfilled' | 'rejected';
+export enum StatusType {
+  Pending = 'pending',
+  Fulfilled = 'fulfilled',
+  Rejected = 'rejected',
+}
+
+export enum RoleType {
+  Member = 'member',
+  Owner = 'owner',
+  Admin = 'admin',
+}
